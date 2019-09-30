@@ -151,13 +151,13 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
     updateToggleLabel()
 
     function imgSrc(filename) {
-        // const folder = filename.split(".").slice(0, 2).join("."),
-        //     ret = `./images/${folder}/${filename}.jpg`;
-        //return ret;
+        const folder = filename.split(".").slice(0, 2).join("."),
+            ret = `./images/${folder}/${filename}.jpg`;
+        return ret;
 
-        const fname100 = filename.split(".").slice(0,-1).concat(["100"]).join(".")
+        // const fname100 = filename.split(".").slice(0,-1).concat(["100"]).join(".")
 
-        return `http://www.blakearchive.org/images/${fname100}.jpg`;
+        // return `https://www.blakearchive.org/images/${fname100}.jpg`;
         
     }
     // create each Palette
