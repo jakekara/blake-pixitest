@@ -3,7 +3,6 @@
   "mode": "development",
   "version": "1.0.0",
   "main": "index.js",
-  "mode":"development",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -16,6 +15,8 @@
     "webpack-cli": "^3.3.9"
   },
   "dependencies": {
-    "pixi.js": "^5.1.5"
+    "@pixi/canvas-renderer": "^5.1.5",
+    "pixi.js": "^5.1.5",
+    "pixi.js-legacy": "^5.1.5"
   }
 }

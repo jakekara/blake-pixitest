@@ -17,6 +17,7 @@ export default class Palette {
         this.sortByHue = this.sortByHue.bind(this);
         this.sortByLightness = this.sortByLightness.bind(this);
         this.sortBySaturation = this.sortBySaturation.bind(this);
+        this.sortByPercent = this.sortByPercent.bind(this);
 
         this.isEqual = this.isEqual.bind(this);
         
@@ -46,6 +47,12 @@ export default class Palette {
     sortByHue(){ return this.sortBy(0); }
     sortBySaturation(){ return this.sortBy(1)}
     sortByLightness(){ return this.sortBy(2);}
+    sortByPercent(){
+        this.props.swatches = this.props.swatches.sort((a, b)=>{
+            if (a.getPercent() < b.getPercent()){ return -1}
+            return 1;
+        })
+    }
 
 
     /**
@@ -88,7 +95,7 @@ export default class Palette {
     }
 
     moveSwatches(hfunc){
-        let yOffset = 0;
+        let yOffset = this.props.yOffset || 0;
         this.props.swatches.forEach((swatch, i)=>{
             const height = hfunc(swatch);
             swatch.setHeight(height);
@@ -101,7 +108,7 @@ export default class Palette {
 
 
     appendTo(stage) {
-        const height = this.props.height / this.props.swatches.length ;
+        // const height = this.props.height / this.props.swatches.length ;
 
         this.props.swatches.map((s, i, arr) => {
             s.setX(this.props.x)

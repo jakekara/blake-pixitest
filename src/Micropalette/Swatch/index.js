@@ -19,6 +19,10 @@ export default class Swatch {
         this.getHSL = this.getHSL.bind(this);
     }
 
+    getRGB(){
+        return this.props.color;
+    }
+
     getHSL(){
         if (!this.__hsl){
             this.__hsl = rgb2hsl(this.props.color);
@@ -80,7 +84,10 @@ export default class Swatch {
     }
 
     getColor() {
-        return parseInt("0x" + this.props.color.slice(0, 3).map(x => x.toString(16).padStart(2,'0')).join(""));
+        if (!this.__color){
+            this.__color = parseInt("0x" + this.props.color.slice(0, 3).map(x => x.toString(16).padStart(2,'0')).join(""));
+        }
+        return this.__color;
 
     }
 
@@ -99,12 +106,11 @@ export default class Swatch {
         }
         if (this.props.mouseoverHandler) {
             rectangle.interactive = true;
-            rectangle.on("mouseover", this.props.mouseoverHandler);
+            rectangle.on("mouseover", ()=>this.props.mouseoverHandler(this));
         }
         if(this.props.mouseoutHandler){
             rectangle.interactive = true;
-            rectangle.on("mouseout", this.props.mouseoutHandler);
-
+            rectangle.on("mouseout", ()=>this.props.mouseoutHandler(this));
         }
 
         stage.addChild(rectangle);

@@ -26,8 +26,13 @@ export default class PaletteGroup{
                 //     this.props.app.stage.addChild(rectangle);
                 // });
 
-            this.props.app.renderer.resize(this.props.app.stage.width, this.props.app.stage.height);
         });
+        this.props.app.renderer.resize(this.props.app.stage.width, this.props.app.stage.height);
+        this.props.app.start();
+        setTimeout(()=>{
+            console.log("Stopping")
+            this.props.app.stop()
+        }, 1000 * 5)
     
     }
 

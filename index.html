@@ -7,10 +7,21 @@
 <body>
   <style>
   .content-row{ display: flex}
-  img{box-shadow: 4px 0px 10px gray;}
-  .container{margin: 40px; border-bottom: 1px solid #efefef;}</style>
-  <div id="container">
-      <script src="./dist/main.js"></script>
-  </div>
+  img{box-shadow: 4px 0px 10px gray;transition: background-color 1s;}
+  .container{
+    /*margin: 40px; */
+    border-bottom: 1px solid #efefef;}</style>
+<!-- 
+<button id="mmcq">mmcq</button>
+<button id="kmeans">KMeans</button>
+<button id="octree">octree</button> -->
+
+<div id="overview"></div>
+<div id="algorithm-controls"></div>
+<div id="sort-controls"></div>
+
+  <div id="root"></div>
+  <script src="./dist/main.js"></script>
+
 </body>
 </html>

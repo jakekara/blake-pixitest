@@ -1,112 +1,64 @@
 import { Swatch, PaletteGroup, Palette } from "./Micropalette";
 import * as PIXI from "pixi.js";
+// import * as PIXI from "pixi.js-legacy";
+
+// import { CanvasRenderer } from '@pixi/canvas-renderer';
 import * as MMCQ20PaletteJSON from "./palette-data/all-ColorThiefMMCQExtractor-LAB-20-palette.json";
+import * as CV2KMeans20PaletteJSON from "./palette-data/all-CV2KMeansExtractor-LAB-20-palette.json";
+import * as PIL20PaletteJSON from "./palette-data/all-PILExtractor-LAB-20-palette.json";
+
 // import * as fullPaletteJSON from "./palette-data/all--Extractor-LAB-20-palette.json";
 
+let apps = [];
+let swatches = [];
+let palettes = [];
+let paletGroups = [];
 
-function newSwatches(n = 10) {
+const dataSets = [
+    {
+        data: MMCQ20PaletteJSON,
+        label: "MMCQ"
+    }, {
+        data: CV2KMeans20PaletteJSON,
+        label: "K-Means"
+    }, {
+        data: PIL20PaletteJSON,
+        label: "Octree"
+    }];
 
-    let ret = [];
+const sortModes = [
+    {
+        label: "hue",
+        func: x => x.sortByHue()
+    }, {
+        label: "lightness",
+        func: x => x.sortByLightness()
+    }, {
+        label: "saturation",
+        func: x => x.sortBySaturation()
+    }, {
+        label: "percent",
+        func: x => x.sortByPercent()
+    }]
 
-    let rgbval = () => 64 + Math.floor(Math.random() * 128);
-    let pctSum = 0;
 
-    for (var i = 0; i < n; i++) {
-        const tmpPct = Math.random();
-        pctSum += tmpPct
-        ret.push({
-            key: i,
-            //color: [i, i, i],
-            //percent: Math.random() * 0.1,
-            percent: tmpPct,
-            color: [rgbval(), rgbval(), rgbval()],
-            // x: 10,
-            // y: 10 * i,
-        });
-    }
-    // make sure the pcts always add up to 1
-    ret = ret.map(x => {
-        return new Swatch({ ...x, percent: x.percent / pctSum })
+
+function cleanup() {
+
+    // swatches.forEach(swatch => {
+    //     swatch.rectangle.clear();
+    //     try {
+    //         swatch.rectangle.destroy();
+    //     } catch (e) { }
+    // })
+    apps.forEach(app => {
+        try { app.destroy(); } catch (e) { }
     })
-
-
-
-    return ret;
+    apps = [];
 }
 
-function newPalettes(n, m = 10) {
+function addSamplePalette(paletteData, label = "sample data", height = 200, sortMode = x=>x) {
 
-
-    let ret = [];
-    for (var i = 0; i < n; i++) {
-        ret.push(new Palette({
-            key: i,
-            swatches: newSwatches(m)
-        }))
-    }
-    return ret;
-}
-// for (var i = 0; i < 255; i += 25) {
-//     swatches.push(new Swatch({
-//         key:i,
-//         color: [i, i, i],
-//         x: 10,
-//         y: 10 * i,
-//     }));
-// }
-
-
-// const p = new Palette({
-//     swatches
-// });
-
-// const palettes = [p];
-
-
-
-function addExample(paletteCount = 100, swatchCount = 10, paletteHeight = 100) {
-
-    let app = new PIXI.Application({
-        // width: window.innerWidth,         // default: 800
-        // height: window.innerHeight,        // default: 600
-        autoResize: true,
-        antialias: true,    // default: false
-        transparent: true, // default: false    
-        resolution: window.devicePixelRatio       // default: 1
-    });
-
-
-    const container = document.createElement("div");
-    const barLabel = document.createElement("h5");
-    const barContainer = document.createElement("div");
-
-    container.appendChild(barLabel);
-    container.appendChild(barContainer)
-    container.appendChild(preview);
-    document.body.appendChild(container);
-
-
-    // annotate
-    barLabel.innerText = `${paletteCount} palettes, ${paletteHeight}px tall, with ${swatchCount} swatches each`
-
-    new PaletteGroup({
-        paletteHeight,
-        palettes: newPalettes(paletteCount, swatchCount, paletteHeight),
-        app,
-        //    sortByHue:true
-    }).appendTo(barContainer);
-
-}
-// addExample();
-
-// addExample(100,10,50);
-
-
-// addExample(5, 500, 300);
-
-
-function addSamplePalette(paletteData, label = "sample data", height=200) {
-    
     //const height = 200;
 
     let app = new PIXI.Application({
@@ -116,13 +68,16 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
         // antialias: true,    // default: false
         transparent: true, // default: false    
         resolution: window.devicePixelRatio,       // default: 1
-        forceCanvas: true
-
+        autoStart: false,
+        // forceCanvas: true,
     });
+
+    apps.push(app);
 
 
     const container = document.createElement("div");
-    const barLabel = document.createElement("h5");
+
+    const barLabel = document.createElement("div");
     const toggleProportionalStatus = document.createElement("button")
     const contentContainer = document.createElement("div");
     const barContainer = document.createElement("div");
@@ -135,15 +90,20 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
     container.appendChild(contentContainer);
     contentContainer.appendChild(barContainer);
     contentContainer.appendChild(preview);
-    document.body.appendChild(container);
 
     container.classList.add("container");
     contentContainer.classList.add("content-row");
 
+    let root = document.getElementById("root");
+    // root = document.createElement("div");
+    document.body.appendChild(root);
+
+    // add skeleton
+    root.appendChild(container);
 
     let proportional = false;
     // annotate
-    barLabel.innerText = `${label}`
+    barLabel.innerText = `${label} @${height}px`
     function updateToggleLabel() {
         toggleProportionalStatus.innerText = proportional ? "proportional" : "equal-sized";
     }
@@ -158,10 +118,10 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
         // const fname100 = filename.split(".").slice(0,-1).concat(["100"]).join(".")
 
         // return `https://www.blakearchive.org/images/${fname100}.jpg`;
-        
+
     }
     // create each Palette
-    const palettes = Object.keys(paletteData).map(k => {
+    const palettes = Object.keys(paletteData).sort().map(k => {
         const d = paletteData[k];
         const swatches = d.map((pct_color, i) => {
             const ret = new Swatch({
@@ -175,12 +135,20 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
         });
 
 
-        return new Palette({
+        let ret = new Palette({
             key: k,
             swatches,
-            mouseOverHandler: () => { preview.setAttribute("src", imgSrc(k)) },
-            mouseOutHandler: () => { preview.setAttribute("src", "")}
+            mouseOverHandler: (swatch) => {
+                //preview.style.backgroundColor=`rgba(${swatch.getRGB().join(",")})`
+                preview.setAttribute("src", imgSrc(k))
+            },
+            // mouseOutHandler: (plt) => { preview.setAttribute("src", "") }
         })
+
+        sortMode(ret);
+
+        return ret;
+
     })
 
     function toggleProproportional() {
@@ -189,6 +157,13 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
         palettes.forEach(p => {
             if (proportional) { p.makeEqual(); }
             else { p.makeProportional(); }
+
+            app.start();
+            setTimeout(()=>{
+                console.log("Stopped")
+                app.stop()
+            }, 1000 * 5)
+
         });
     }
 
@@ -202,7 +177,7 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
     //     sortByHue: true,
     //     paletteHeight: 200
     // }).appendTo(barContainer);
-    
+
     // new PaletteGroup({
     //     palettes,
     //     app,
@@ -213,33 +188,100 @@ function addSamplePalette(paletteData, label = "sample data", height=200) {
     new PaletteGroup({
         palettes,
         app,
-        sortByHue: true,
+        // sortByHue: true,
         paletteHeight: height
     }).appendTo(barContainer);
 
+}
+
+function draw(data, sortMode) {
+
+    cleanup();
+
+    let root = document.getElementById("root");
+
+    function killChildren(node) {
+        if (!node) { return }
+
+        node.childNodes.forEach(c => killChildren(c));
+        node.remove()
+    }
+
+    killChildren(root);
+
+    root = document.createElement("div")
+    root.id = "root";
+    document.body.appendChild(root);
+
+
+    Object.keys(data).slice(0, 2).forEach(k => {
+        if (!k.startsWith("songs")) { return }
+        addSamplePalette(data[k], `${k}`, 50, sortMode);
+    })
+
+    Object.keys(data).slice(2, 4).forEach(k => {
+        if (!k.startsWith("songs")) { return }
+        addSamplePalette(data[k], `${k}`, 100, sortMode);
+    })
+
+
+    Object.keys(data).slice(4, 6).forEach(k => {
+        if (!k.startsWith("songs")) { return }
+        addSamplePalette(data[k], `${k}`, 200, sortMode);
+    })
+
+    Object.keys(data).slice(6, 100).forEach(k => {
+        if (!k.startsWith("songs")) { return }
+        addSamplePalette(data[k], `${k}`, 300, sortMode);
+    })
 
 }
 
+let dataSetIdx = 0,
+    sortModeIdx = 0;
 
-Object.keys(MMCQ20PaletteJSON).slice(0,2).forEach(k => {
-    if (!k.startsWith("songs")) { return }
-    addSamplePalette(MMCQ20PaletteJSON[k], `${k}`, 50);
+sortModes.forEach((m, i) => {
+    const button = document.createElement("button")
+    button.innerText = m.label
+    const controls = document.getElementById("sort-controls")
+    controls.appendChild(button)
+    button.onclick = () => {
+        sortModeIdx = i;
+        drawWithCurrentState()
+    }
+
 })
 
-Object.keys(MMCQ20PaletteJSON).slice(2,4).forEach(k => {
-    if (!k.startsWith("songs")) { return }
-    addSamplePalette(MMCQ20PaletteJSON[k], `${k}`, 100);
+// document.getElementById("kmeans").onclick = () => {
+//     draw(MMCQ20PaletteJSON);
+// }
+
+// document.getElementById("mmcq").onclick = () => {
+//     draw(CV2KMeans20PaletteJSON);
+// }
+
+// document.getElementById("octree").onclick = () => {
+//     draw(PIL20PaletteJSON);
+// }
+
+function drawWithCurrentState() {
+    const dset = dataSets[dataSetIdx],
+        sorter = sortModes[sortModeIdx];
+    draw(dataSets[dataSetIdx].data, sorter.func)
+    const details = document.getElementById("overview");
+    details.innerText = `Current mode: ${dset.label} extraction sorted by ${sorter.label}`;
+}
+
+dataSets.forEach((dset, i) => {
+    const button = document.createElement("button")
+    button.innerText = dset.label;
+    const controls = document.getElementById("algorithm-controls")
+    controls.appendChild(button)
+    button.onclick = () => {
+        dataSetIdx = i;
+        drawWithCurrentState()
+    }
 })
 
-
-Object.keys(MMCQ20PaletteJSON).slice(4,6).forEach(k => {
-    if (!k.startsWith("songs")) { return }
-    addSamplePalette(MMCQ20PaletteJSON[k], `${k}`,200);
-})
-
-Object.keys(MMCQ20PaletteJSON).slice(6,100).forEach(k => {
-    if (!k.startsWith("songs")) { return }
-    addSamplePalette(MMCQ20PaletteJSON[k], `${k}`,300);
-})
-
-
+drawWithCurrentState()
+// draw(MMCQ20PaletteJSON);
